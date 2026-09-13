@@ -166,11 +166,37 @@
     .edu-name{font-size:.9rem;font-weight:600;margin-bottom:.15rem}
     .edu-inst{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
 
+    /* BOOT SCREEN */
+    #boot-screen{
+      position:fixed;inset:0;background:var(--bg);z-index:9999;
+      display:flex;flex-direction:column;justify-content:center;
+      padding:3rem;font-family:var(--mono);font-size:.82rem;
+      transition:opacity .6s ease;
+    }
+    #boot-screen.hide{opacity:0;pointer-events:none}
+    .boot-line{color:#4ade80;margin-bottom:.2rem;opacity:0;transition:opacity .1s}
+    .boot-line.show{opacity:1}
+    .boot-line .ok{color:#4ade80;margin-right:.5rem}
+    .boot-line .warn{color:#facc15;margin-right:.5rem}
+    .boot-line .err{color:#f87171;margin-right:.5rem}
+    .boot-line .dim{color:var(--muted)}
+    .boot-cursor{display:inline-block;width:8px;height:14px;background:var(--accent);animation:bcursor .8s step-end infinite;vertical-align:middle;margin-left:2px}
+    @keyframes bcursor{0%,100%{opacity:1}50%{opacity:0}}
+    .boot-progress{margin-top:1.5rem;height:2px;background:rgba(0,212,255,0.15);border-radius:2px;overflow:hidden;width:300px}
+    .boot-bar{height:100%;background:var(--accent);width:0;transition:width .1s linear;border-radius:2px}
+
+    /* CUSTOM CURSOR */
+    *{cursor:none!important}
+    #cursor{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .1s ease;box-shadow:0 0 8px var(--accent)}
+    #cursor-ring{position:fixed;width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,212,255,0.5);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .12s ease,top .12s ease}
+    .cursor-trail{position:fixed;width:4px;height:4px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:99997;transform:translate(-50%,-50%);opacity:.6;transition:opacity .5s ease}
+
     .comp-list{display:flex;flex-direction:column}
     .comp-item{display:grid;grid-template-columns:180px 1fr;gap:.4rem 1rem;align-items:baseline;padding:.5rem 0;border-bottom:1px solid var(--border2)}
     .comp-item:last-child{border-bottom:none}
     .comp-label{font-family:var(--mono);font-size:.75rem;color:var(--accent);font-weight:500}
     .comp-val{font-size:.83rem;color:var(--muted2);font-weight:300;line-height:1.5}
+
     .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
     .reveal.in{opacity:1;transform:translateY(0)}
 
@@ -193,6 +219,17 @@
   </style>
 </head>
 <body>
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div style="color:var(--muted);font-size:.7rem;margin-bottom:1rem">eric-portfolio v2.0 — BIOS 2026</div>
+  <div id="boot-lines"></div>
+  <div class="boot-progress" style="margin-top:1.2rem"><div class="boot-bar" id="boot-bar"></div></div>
+</div>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
 <canvas id="particles"></canvas>
 
 <nav style="position:relative">
@@ -286,6 +323,7 @@
     <!-- HABILIDADES -->
     <div class="sidebar-card reveal" id="skills">
       <span class="sid-label" data-i18n="s_skills">HABILIDADES</span>
+      <div class="skill-group-s"><div class="sg-title" data-i18n="sk_hw">HARDWARE</div><div class="tags-s"><span class="tag-s">Dell</span><span class="tag-s">HP</span><span class="tag-s">Fujitsu</span><span class="tag-s">Lenovo</span><span class="tag-s">Servidores</span><span class="tag-s">MiniPC</span><span class="tag-s">Impresoras</span><span class="tag-s">Periféricos</span><span class="tag-s">Cashlogy</span><span class="tag-s">Rack</span><span class="tag-s">SAI/UPS</span><span class="tag-s">KVM</span><span class="tag-s">Cableado estructurado</span></div></div>
       <div class="skill-group-s"><div class="sg-title" data-i18n="sk1">SISTEMAS</div><div class="tags-s"><span class="tag-s">Linux</span><span class="tag-s">Windows Server</span><span class="tag-s">OpenVPN</span><span class="tag-s">RDPWrapper</span><span class="tag-s">NAS</span><span class="tag-s">RAID</span><span class="tag-s">FTP</span><span class="tag-s">SFTP</span><span class="tag-s">ZPL</span><span class="tag-s">UrBackup</span></div></div>
       <div class="skill-group-s"><div class="sg-title" data-i18n="sk2">SERVIDORES LINUX</div><div class="tags-s"><span class="tag-s">Apache</span><span class="tag-s">Nginx</span><span class="tag-s">DNS</span><span class="tag-s">DHCP</span><span class="tag-s">SSH</span><span class="tag-s">Samba</span><span class="tag-s">Postfix</span><span class="tag-s">OpenLDAP</span><span class="tag-s">Tomcat</span><span class="tag-s">WebMail</span><span class="tag-s">Asterisk VoIP</span></div></div>
       <div class="skill-group-s"><div class="sg-title" data-i18n="sk3">REDES</div><div class="tags-s"><span class="tag-s">TCP/IP</span><span class="tag-s">VLAN</span><span class="tag-s">NAT</span><span class="tag-s">VPN</span><span class="tag-s">MikroTik</span><span class="tag-s">Wireshark</span><span class="tag-s">Bonding</span></div></div>
@@ -419,6 +457,122 @@
 <div class="footer"><p data-i18n="footer">Eric Alcázar Contreras · Barcelona · 2026</p></div>
 
 <script>
+// ── BOOT SCREEN ──
+const bootLines=[
+  {type:'dim',  text:'Initializing eric-portfolio...'},
+  {type:'ok',   text:'Loading kernel modules... done'},
+  {type:'ok',   text:'Mounting /home/eric/experience'},
+  {type:'ok',   text:'Mounting /home/eric/skills'},
+  {type:'ok',   text:'Starting networking services'},
+  {type:'ok',   text:'Configuring OpenVPN... done'},
+  {type:'warn', text:'AWS SAA certification: IN PROGRESS'},
+  {type:'ok',   text:'Loading portfolio assets'},
+  {type:'ok',   text:'Injecting particles engine'},
+  {type:'ok',   text:'Starting web server on port 443'},
+  {type:'dim',  text:''},
+  {type:'ok',   text:'System ready. Welcome.'},
+];
+
+const bootLinesEl=document.getElementById('boot-lines');
+const bootBar=document.getElementById('boot-bar');
+const bootScreen=document.getElementById('boot-screen');
+
+function runBoot(){
+  let i=0;
+  const total=bootLines.length;
+  function next(){
+    if(i>=total){
+      // finish
+      bootBar.style.width='100%';
+      setTimeout(()=>{
+        bootScreen.classList.add('hide');
+        setTimeout(()=>bootScreen.remove(),700);
+      },400);
+      return;
+    }
+    const bl=bootLines[i];
+    const div=document.createElement('div');
+    div.className='boot-line';
+    if(bl.type==='ok') div.innerHTML='<span class="ok">[  OK  ]</span><span>'+bl.text+'</span>';
+    else if(bl.type==='warn') div.innerHTML='<span class="warn">[ WARN ]</span><span style="color:#facc15">'+bl.text+'</span>';
+    else if(bl.type==='err') div.innerHTML='<span class="err">[ FAIL ]</span><span style="color:#f87171">'+bl.text+'</span>';
+    else div.innerHTML='<span class="dim">'+bl.text+'</span>';
+    bootLinesEl.appendChild(div);
+    setTimeout(()=>div.classList.add('show'),10);
+    bootBar.style.width=((i+1)/total*100)+'%';
+    i++;
+    setTimeout(next, bl.text==='' ? 80 : Math.random()*120+60);
+  }
+  next();
+}
+runBoot();
+
+// ── CUSTOM CURSOR ──
+const cursor=document.getElementById('cursor');
+const cursorRing=document.getElementById('cursor-ring');
+const trails=[];
+const TRAIL_COUNT=8;
+
+for(let i=0;i<TRAIL_COUNT;i++){
+  const t=document.createElement('div');
+  t.className='cursor-trail';
+  t.style.opacity=((TRAIL_COUNT-i)/TRAIL_COUNT*0.5)+'';
+  t.style.width=(4-i*0.3)+'px';
+  t.style.height=(4-i*0.3)+'px';
+  document.body.appendChild(t);
+  trails.push({el:t,x:0,y:0});
+}
+
+let mx=0,my=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx+'px';
+  cursor.style.top=my+'px';
+  setTimeout(()=>{
+    cursorRing.style.left=mx+'px';
+    cursorRing.style.top=my+'px';
+  },80);
+});
+
+let trailPos=trails.map(()=>({x:0,y:0}));
+function animateTrail(){
+  let px=mx,py=my;
+  trailPos.forEach((pos,i)=>{
+    pos.x+=(px-pos.x)*0.35;
+    pos.y+=(py-pos.y)*0.35;
+    trails[i].el.style.left=pos.x+'px';
+    trails[i].el.style.top=pos.y+'px';
+    px=pos.x; py=pos.y;
+  });
+  requestAnimationFrame(animateTrail);
+}
+animateTrail();
+
+document.addEventListener('mousedown',()=>{
+  cursor.style.transform='translate(-50%,-50%) scale(0.7)';
+  cursorRing.style.transform='translate(-50%,-50%) scale(1.4)';
+});
+document.addEventListener('mouseup',()=>{
+  cursor.style.transform='translate(-50%,-50%) scale(1)';
+  cursorRing.style.transform='translate(-50%,-50%) scale(1)';
+});
+
+// hover effect on links
+document.querySelectorAll('a,button,.cmd-btn,.tag-s,.nav-links a').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cursor.style.transform='translate(-50%,-50%) scale(1.5)';
+    cursorRing.style.width='40px';
+    cursorRing.style.height='40px';
+    cursorRing.style.borderColor='var(--accent)';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cursor.style.transform='translate(-50%,-50%) scale(1)';
+    cursorRing.style.width='28px';
+    cursorRing.style.height='28px';
+    cursorRing.style.borderColor='rgba(0,212,255,0.5)';
+  });
+});
+
 // PARTICLES
 const canvas=document.getElementById('particles'),ctx=canvas.getContext('2d');
 let W,H,dots=[];
@@ -539,9 +693,9 @@ document.getElementById('terminal-section').addEventListener('click',()=>termInp
 
 // I18N
 const T={
-  es:{nav_exp:'Experiencia',nav_skills:'Habilidades',nav_edu:'Formación',nav_contact:'Contacto',hero_tag:'sistemas · programación',role1:'Administrador de Sistemas',role2:'Programador Junior en activo',hero_desc:'Administrador de Sistemas y Desarrollador Web con experiencia real en administración de infraestructura, automatización e integraciones. Apasionado por construir y mantener sistemas que funcionen de verdad.',btn1:'Contactar',btn2:'Ver experiencia',s_exp:'Experiencia',s_edu:'Formación',s_comp:'Competencias Técnicas',s_skills:'HABILIDADES',s_contact:'CONTACTO',s_lang:'IDIOMAS',n_date:'Mar 2026 — actualidad',n_title:'Programador Junior',n1:'Desarrollo de integraciones de ficheros CSV, EDI y texto de ancho fijo con agencias de transporte, incluyendo mapeo de campos y programación pre y post importación',n2:'Desarrollo de comunicaciones mediante Web Services SOAP para integración de datos en el sistema',n3:'Programación en Visual Basic .NET (VB.NET) y C#',n4:'Gestión y consulta de bases de datos',n5:'Generación de informes con Telerik Reports',n6:'Configuración e integración de impresoras de etiquetas y desarrollo de etiquetas en formato ZPL',n7:'Transferencia de ficheros mediante FTP y SFTP con sistemas externos',c_date:'2023 — Mar 2026',c_title:'Administrador de Sistemas',c1:'Desarrollo de scripts de automatización para despliegue y configuración masiva de equipos (instalación de SO, aplicaciones y configuración para clientes)',c2:'Configuración y administración de NAS e infraestructura VPN con OpenVPN y RDPWrapper',c3:'Configuración de redes y conectividad',c4:'Reparación y mantenimiento de equipos y servidores Lenovo, HP, Fujitsu y DELL',c5:'Configuración de RAID para gestión y redundancia de discos',c6:'Gestión de incidencias mediante sistema de tickets',sk1:'SISTEMAS',sk2:'SERVIDORES LINUX',sk3:'REDES',sk_cyber:'CIBERSEGURIDAD',sk4:'DESARROLLO',sk5:'FICHEROS DE DATOS',comp1_label:'Administración de SO',comp1_val:'Windows y Linux (Ubuntu/Debian)',comp2_label:'Servidores Linux',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automatización',comp3_val:'Script Bash para creación masiva de usuarios en OpenLDAP desde CSV, con integración automática en Asterisk y generación de cuentas en Postfix',comp4_label:'Ciberseguridad y análisis',comp4_val:'Kali Linux, cifrado con OpenSSL, craqueo de contraseñas, análisis de tráfico con Wireshark, detección con SNORT, ARP poisoning, DNS spoofing, DoS/DDoS, ingeniería social',comp5_label:'Redes y conectividad',comp5_val:'Direccionamiento IP, VLAN, NAT, configuración de routers MikroTik, bonding de interfaces y compartición de red',comp6_label:'Bases de datos',comp6_val:'MySQL — diseño, modelado, consultas avanzadas y triggers',comp7_label:'Scripting y automatización',comp7_val:'Bash y PowerShell',comp8_label:'Control de versiones',comp8_val:'Git y GitHub',comp9_label:'Desarrollo y lenguajes',comp9_val:'HTML5, CSS3, JavaScript, PHP, POO, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:'Integración de ficheros',comp11_val:'Programar integración de ficheros al software con diferentes formatos (CSV, XML, EDI, SOAP, texto fijo)',comp12_label:'Generación de informes',comp12_val:'Informes con Telerik Reports',edu1:'CFGS — Desarrollo de Aplicaciones Web',edu2:'CFGS — Administración de Sistemas Informáticos y Redes',edu3:'Premio al mejor proyecto de síntesis — ASIX',l_es:'Español',l_ca:'Catalán',l_en:'Inglés',l_nat:'Nativo',l_nat2:'Nativo',c_email:'EMAIL',c_phone:'TELÉFONO',c_loc:'UBICACIÓN',footer:'Eric Alcázar Contreras · Barcelona · 2026'},
-  ca:{nav_exp:'Experiència',nav_skills:'Habilitats',nav_edu:'Formació',nav_contact:'Contacte',hero_tag:'sistemes · programació',role1:'Administrador de Sistemes',role2:'Programador Junior en actiu',hero_desc:"Administrador de Sistemes i Desenvolupador Web amb experiència real en administració d'infraestructura, automatització i integracions. Apassionat per construir i mantenir sistemes que funcionin de debò.",btn1:'Contactar',btn2:"Veure experiència",s_exp:'Experiència',s_edu:'Formació',s_comp:'Competències Tècniques',s_skills:'HABILITATS',s_contact:'CONTACTE',s_lang:'IDIOMES',n_date:'Mar 2026 — actualitat',n_title:'Programador Junior',n1:"Desenvolupament d'integracions de fitxers CSV, EDI i text d'amplada fixa amb agències de transport",n2:'Desenvolupament de comunicacions mitjançant Web Services SOAP',n3:'Programació en Visual Basic .NET (VB.NET) i C#',n4:'Gestió i consulta de bases de dades',n5:"Generació d'informes amb Telerik Reports",n6:"Configuració i integració d'impressores d'etiquetes en format ZPL",n7:'Transferència de fitxers mitjançant FTP i SFTP',c_date:'2023 — Mar 2026',c_title:'Administrador de Sistemes',c1:"Desenvolupament de scripts d'automatització per al desplegament massiu d'equips",c2:'Configuració i administració de NAS i infraestructura VPN amb OpenVPN i RDPWrapper',c3:'Configuració de xarxes i connectivitat',c4:"Reparació i manteniment d'equips i servidors Lenovo, HP, Fujitsu i DELL",c5:'Configuració de RAID per a gestió i redundància de discos',c6:"Gestió d'incidències mitjançant sistema de tiquets",sk1:'SISTEMES',sk2:'SERVIDORS LINUX',sk3:'XARXES',sk_cyber:'CIBERSEGURETAT',sk4:'DESENVOLUPAMENT',sk5:'FITXERS DE DADES',comp1_label:'Administració de SO',comp1_val:'Windows i Linux (Ubuntu/Debian)',comp2_label:'Servidors Linux',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automatització',comp3_val:"Script Bash per a creació massiva d'usuaris a OpenLDAP des de CSV, amb integració automàtica a Asterisk i generació de comptes a Postfix",comp4_label:'Ciberseguretat i anàlisi',comp4_val:"Kali Linux, xifratge amb OpenSSL, anàlisi de tràfic amb Wireshark, detecció amb SNORT, ARP poisoning, DNS spoofing, DoS/DDoS, enginyeria social",comp5_label:'Xarxes i connectivitat',comp5_val:'Adreçament IP, VLAN, NAT, configuració de routers MikroTik, bonding d\'interfícies i compartició de xarxa',comp6_label:'Bases de dades',comp6_val:'MySQL — disseny, modelat, consultes avançades i triggers',comp7_label:'Scripting i automatització',comp7_val:'Bash i PowerShell',comp8_label:'Control de versions',comp8_val:'Git i GitHub',comp9_label:'Desenvolupament i llenguatges',comp9_val:'HTML5, CSS3, JavaScript, PHP, POO, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:"Integració de fitxers",comp11_val:"Programar integració de fitxers al programari amb diferents formats (CSV, XML, EDI, SOAP, text fix)",comp12_label:"Generació d'informes",comp12_val:'Informes amb Telerik Reports',edu1:"CFGS — Desenvolupament d'Aplicacions Web",edu2:'CFGS — Administració de Sistemes Informàtics i Xarxes',edu3:'Premi al millor projecte de síntesi — ASIX',l_es:'Espanyol',l_ca:'Català',l_en:'Anglès',l_nat:'Natiu',l_nat2:'Natiu',c_email:'CORREU',c_phone:'TELÈFON',c_loc:'UBICACIÓ',footer:'Eric Alcázar Contreras · Barcelona · 2026'},
-  en:{nav_exp:'Experience',nav_skills:'Skills',nav_edu:'Education',nav_contact:'Contact',hero_tag:'systems · programming',role1:'Systems Administrator',role2:'Junior Developer',hero_desc:'Systems Administrator and Web Developer with hands-on experience in infrastructure administration, automation and integrations. Passionate about building and maintaining systems that actually work.',btn1:'Get in touch',btn2:'View experience',s_exp:'Experience',s_edu:'Education',s_comp:'Technical Skills',s_skills:'SKILLS',s_contact:'CONTACT',s_lang:'LANGUAGES',n_date:'Mar 2026 — present',n_title:'Junior Developer',n1:'Development of CSV, EDI and fixed-width text file integrations with transport agencies',n2:'Development of SOAP Web Services communications for system data integration',n3:'Programming in Visual Basic .NET (VB.NET) and C#',n4:'Database management and querying',n5:'Report generation with Telerik Reports',n6:'Label printer configuration and integration, ZPL label development',n7:'File transfer via FTP and SFTP with external systems',c_date:'2023 — Mar 2026',c_title:'Systems Administrator',c1:'Automation script development for mass deployment and configuration of equipment',c2:'NAS configuration and administration, VPN infrastructure with OpenVPN and RDPWrapper',c3:'Network and connectivity configuration',c4:'Repair and maintenance of Lenovo, HP, Fujitsu and DELL equipment and servers',c5:'RAID configuration for disk management and redundancy',c6:'Incident management via ticketing system',sk1:'SYSTEMS',sk2:'LINUX SERVERS',sk3:'NETWORKING',sk_cyber:'CYBERSECURITY',sk4:'DEVELOPMENT',sk5:'DATA FILES',comp1_label:'OS Administration',comp1_val:'Windows and Linux (Ubuntu/Debian)',comp2_label:'Linux Servers',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automation',comp3_val:'Bash script for mass user creation in OpenLDAP from CSV, with automatic integration in Asterisk and Postfix account generation',comp4_label:'Cybersecurity & analysis',comp4_val:'Kali Linux, OpenSSL encryption, traffic analysis with Wireshark, SNORT detection, ARP poisoning, DNS spoofing, DoS/DDoS, social engineering',comp5_label:'Networking',comp5_val:'IP addressing, VLAN, NAT, MikroTik routers, interface bonding and network sharing',comp6_label:'Databases',comp6_val:'MySQL — design, modeling, advanced queries and triggers',comp7_label:'Scripting',comp7_val:'Bash and PowerShell',comp8_label:'Version control',comp8_val:'Git and GitHub',comp9_label:'Development & languages',comp9_val:'HTML5, CSS3, JavaScript, PHP, OOP, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:'File integration',comp11_val:'Programming file integrations into software with different formats (CSV, XML, EDI, SOAP, fixed-width)',comp12_label:'Report generation',comp12_val:'Reports with Telerik Reports',edu1:'HND — Web Application Development',edu2:'HND — IT Systems and Network Administration',edu3:'Best Synthesis Project Award — ASIX',l_es:'Spanish',l_ca:'Catalan',l_en:'English',l_nat:'Native',l_nat2:'Native',c_email:'EMAIL',c_phone:'PHONE',c_loc:'LOCATION',footer:'Eric Alcázar Contreras · Barcelona · 2026'}
+  es:{nav_exp:'Experiencia',nav_skills:'Habilidades',nav_edu:'Formación',nav_contact:'Contacto',hero_tag:'sistemas · programación',role1:'Administrador de Sistemas',role2:'Programador Junior en activo',hero_desc:'Administrador de Sistemas y Desarrollador Web con experiencia real en administración de infraestructura, automatización e integraciones. Apasionado por construir y mantener sistemas que funcionen de verdad.',btn1:'Contactar',btn2:'Ver experiencia',s_exp:'Experiencia',s_edu:'Formación',s_comp:'Competencias Técnicas',s_skills:'HABILIDADES',s_contact:'CONTACTO',s_lang:'IDIOMAS',n_date:'Mar 2026 — actualidad',n_title:'Programador Junior',n1:'Desarrollo de integraciones de ficheros CSV, EDI y texto de ancho fijo con agencias de transporte, incluyendo mapeo de campos y programación pre y post importación',n2:'Desarrollo de comunicaciones mediante Web Services SOAP para integración de datos en el sistema',n3:'Programación en Visual Basic .NET (VB.NET) y C#',n4:'Gestión y consulta de bases de datos',n5:'Generación de informes con Telerik Reports',n6:'Configuración e integración de impresoras de etiquetas y desarrollo de etiquetas en formato ZPL',n7:'Transferencia de ficheros mediante FTP y SFTP con sistemas externos',c_date:'2023 — Mar 2026',c_title:'Administrador de Sistemas',c1:'Desarrollo de scripts de automatización para despliegue y configuración masiva de equipos (instalación de SO, aplicaciones y configuración para clientes)',c2:'Configuración y administración de NAS e infraestructura VPN con OpenVPN y RDPWrapper',c3:'Configuración de redes y conectividad',c4:'Reparación y mantenimiento de equipos y servidores Lenovo, HP, Fujitsu y DELL',c5:'Configuración de RAID para gestión y redundancia de discos',c6:'Gestión de incidencias mediante sistema de tickets',sk1:'SISTEMAS',sk2:'SERVIDORES LINUX',sk3:'REDES',sk_cyber:'CIBERSEGURIDAD',sk_hw:'HARDWARE',sk4:'DESARROLLO',sk5:'FICHEROS DE DATOS',comp1_label:'Administración de SO',comp1_val:'Windows y Linux (Ubuntu/Debian)',comp2_label:'Servidores Linux',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automatización',comp3_val:'Script Bash para creación masiva de usuarios en OpenLDAP desde CSV, con integración automática en Asterisk y generación de cuentas en Postfix',comp4_label:'Ciberseguridad y análisis',comp4_val:'Kali Linux, cifrado con OpenSSL, craqueo de contraseñas, análisis de tráfico con Wireshark, detección con SNORT, ARP poisoning, DNS spoofing, DoS/DDoS, ingeniería social',comp5_label:'Redes y conectividad',comp5_val:'Direccionamiento IP, VLAN, NAT, configuración de routers MikroTik, bonding de interfaces y compartición de red',comp6_label:'Bases de datos',comp6_val:'MySQL — diseño, modelado, consultas avanzadas y triggers',comp7_label:'Scripting y automatización',comp7_val:'Bash y PowerShell',comp8_label:'Control de versiones',comp8_val:'Git y GitHub',comp9_label:'Desarrollo y lenguajes',comp9_val:'HTML5, CSS3, JavaScript, PHP, POO, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:'Integración de ficheros',comp11_val:'Programar integración de ficheros al software con diferentes formatos (CSV, XML, EDI, SOAP, texto fijo)',comp12_label:'Generación de informes',comp12_val:'Informes con Telerik Reports',edu1:'CFGS — Desarrollo de Aplicaciones Web',edu2:'CFGS — Administración de Sistemas Informáticos y Redes',edu3:'Premio al mejor proyecto de síntesis — ASIX',l_es:'Español',l_ca:'Catalán',l_en:'Inglés',l_nat:'Nativo',l_nat2:'Nativo',c_email:'EMAIL',c_phone:'TELÉFONO',c_loc:'UBICACIÓN',footer:'Eric Alcázar Contreras · Barcelona · 2026'},
+  ca:{nav_exp:'Experiència',nav_skills:'Habilitats',nav_edu:'Formació',nav_contact:'Contacte',hero_tag:'sistemes · programació',role1:'Administrador de Sistemes',role2:'Programador Junior en actiu',hero_desc:"Administrador de Sistemes i Desenvolupador Web amb experiència real en administració d'infraestructura, automatització i integracions. Apassionat per construir i mantenir sistemes que funcionin de debò.",btn1:'Contactar',btn2:"Veure experiència",s_exp:'Experiència',s_edu:'Formació',s_comp:'Competències Tècniques',s_skills:'HABILITATS',s_contact:'CONTACTE',s_lang:'IDIOMES',n_date:'Mar 2026 — actualitat',n_title:'Programador Junior',n1:"Desenvolupament d'integracions de fitxers CSV, EDI i text d'amplada fixa amb agències de transport",n2:'Desenvolupament de comunicacions mitjançant Web Services SOAP',n3:'Programació en Visual Basic .NET (VB.NET) i C#',n4:'Gestió i consulta de bases de dades',n5:"Generació d'informes amb Telerik Reports",n6:"Configuració i integració d'impressores d'etiquetes en format ZPL",n7:'Transferència de fitxers mitjançant FTP i SFTP',c_date:'2023 — Mar 2026',c_title:'Administrador de Sistemes',c1:"Desenvolupament de scripts d'automatització per al desplegament massiu d'equips",c2:'Configuració i administració de NAS i infraestructura VPN amb OpenVPN i RDPWrapper',c3:'Configuració de xarxes i connectivitat',c4:"Reparació i manteniment d'equips i servidors Lenovo, HP, Fujitsu i DELL",c5:'Configuració de RAID per a gestió i redundància de discos',c6:"Gestió d'incidències mitjançant sistema de tiquets",sk1:'SISTEMES',sk2:'SERVIDORS LINUX',sk3:'XARXES',sk_cyber:'CIBERSEGURETAT',sk_hw:'MAQUINARI',sk4:'DESENVOLUPAMENT',sk5:'FITXERS DE DADES',comp1_label:'Administració de SO',comp1_val:'Windows i Linux (Ubuntu/Debian)',comp2_label:'Servidors Linux',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automatització',comp3_val:"Script Bash per a creació massiva d'usuaris a OpenLDAP des de CSV, amb integració automàtica a Asterisk i generació de comptes a Postfix",comp4_label:'Ciberseguretat i anàlisi',comp4_val:"Kali Linux, xifratge amb OpenSSL, anàlisi de tràfic amb Wireshark, detecció amb SNORT, ARP poisoning, DNS spoofing, DoS/DDoS, enginyeria social",comp5_label:'Xarxes i connectivitat',comp5_val:'Adreçament IP, VLAN, NAT, configuració de routers MikroTik, bonding d\'interfícies i compartició de xarxa',comp6_label:'Bases de dades',comp6_val:'MySQL — disseny, modelat, consultes avançades i triggers',comp7_label:'Scripting i automatització',comp7_val:'Bash i PowerShell',comp8_label:'Control de versions',comp8_val:'Git i GitHub',comp9_label:'Desenvolupament i llenguatges',comp9_val:'HTML5, CSS3, JavaScript, PHP, POO, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:"Integració de fitxers",comp11_val:"Programar integració de fitxers al programari amb diferents formats (CSV, XML, EDI, SOAP, text fix)",comp12_label:"Generació d'informes",comp12_val:'Informes amb Telerik Reports',edu1:"CFGS — Desenvolupament d'Aplicacions Web",edu2:'CFGS — Administració de Sistemes Informàtics i Xarxes',edu3:'Premi al millor projecte de síntesi — ASIX',l_es:'Espanyol',l_ca:'Català',l_en:'Anglès',l_nat:'Natiu',l_nat2:'Natiu',c_email:'CORREU',c_phone:'TELÈFON',c_loc:'UBICACIÓ',footer:'Eric Alcázar Contreras · Barcelona · 2026'},
+  en:{nav_exp:'Experience',nav_skills:'Skills',nav_edu:'Education',nav_contact:'Contact',hero_tag:'systems · programming',role1:'Systems Administrator',role2:'Junior Developer',hero_desc:'Systems Administrator and Web Developer with hands-on experience in infrastructure administration, automation and integrations. Passionate about building and maintaining systems that actually work.',btn1:'Get in touch',btn2:'View experience',s_exp:'Experience',s_edu:'Education',s_comp:'Technical Skills',s_skills:'SKILLS',s_contact:'CONTACT',s_lang:'LANGUAGES',n_date:'Mar 2026 — present',n_title:'Junior Developer',n1:'Development of CSV, EDI and fixed-width text file integrations with transport agencies',n2:'Development of SOAP Web Services communications for system data integration',n3:'Programming in Visual Basic .NET (VB.NET) and C#',n4:'Database management and querying',n5:'Report generation with Telerik Reports',n6:'Label printer configuration and integration, ZPL label development',n7:'File transfer via FTP and SFTP with external systems',c_date:'2023 — Mar 2026',c_title:'Systems Administrator',c1:'Automation script development for mass deployment and configuration of equipment',c2:'NAS configuration and administration, VPN infrastructure with OpenVPN and RDPWrapper',c3:'Network and connectivity configuration',c4:'Repair and maintenance of Lenovo, HP, Fujitsu and DELL equipment and servers',c5:'RAID configuration for disk management and redundancy',c6:'Incident management via ticketing system',sk1:'SYSTEMS',sk2:'LINUX SERVERS',sk3:'NETWORKING',sk_cyber:'CYBERSECURITY',sk_hw:'HARDWARE',sk4:'DEVELOPMENT',sk5:'DATA FILES',comp1_label:'OS Administration',comp1_val:'Windows and Linux (Ubuntu/Debian)',comp2_label:'Linux Servers',comp2_val:'OpenLDAP, DNS, DHCP, FTP, Apache, Nginx, Tomcat, Samba, Postfix, WebMail, Asterisk VoIP, SSH, UrBackup',comp3_label:'Automation',comp3_val:'Bash script for mass user creation in OpenLDAP from CSV, with automatic integration in Asterisk and Postfix account generation',comp4_label:'Cybersecurity & analysis',comp4_val:'Kali Linux, OpenSSL encryption, traffic analysis with Wireshark, SNORT detection, ARP poisoning, DNS spoofing, DoS/DDoS, social engineering',comp5_label:'Networking',comp5_val:'IP addressing, VLAN, NAT, MikroTik routers, interface bonding and network sharing',comp6_label:'Databases',comp6_val:'MySQL — design, modeling, advanced queries and triggers',comp7_label:'Scripting',comp7_val:'Bash and PowerShell',comp8_label:'Version control',comp8_val:'Git and GitHub',comp9_label:'Development & languages',comp9_val:'HTML5, CSS3, JavaScript, PHP, OOP, APIs, VB.NET, C#, Laravel, Bootstrap, Blade, Git',comp11_label:'File integration',comp11_val:'Programming file integrations into software with different formats (CSV, XML, EDI, SOAP, fixed-width)',comp12_label:'Report generation',comp12_val:'Reports with Telerik Reports',edu1:'HND — Web Application Development',edu2:'HND — IT Systems and Network Administration',edu3:'Best Synthesis Project Award — ASIX',l_es:'Spanish',l_ca:'Catalan',l_en:'English',l_nat:'Native',l_nat2:'Native',c_email:'EMAIL',c_phone:'PHONE',c_loc:'LOCATION',footer:'Eric Alcázar Contreras · Barcelona · 2026'}
 };
 const sel=document.getElementById('langSel');
 function applyLang(lang){document.documentElement.lang=lang;const t=T[lang];document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(t[k]!==undefined)el.textContent=t[k]})}
