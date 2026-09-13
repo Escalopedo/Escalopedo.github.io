@@ -169,21 +169,24 @@
     /* BOOT SCREEN */
     #boot-screen{
       position:fixed;inset:0;background:var(--bg);z-index:9999;
-      display:flex;flex-direction:column;justify-content:center;
-      padding:3rem;font-family:var(--mono);font-size:.82rem;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      font-family:var(--mono);
       transition:opacity .6s ease;
     }
     #boot-screen.hide{opacity:0;pointer-events:none}
-    .boot-line{color:#4ade80;margin-bottom:.2rem;opacity:0;transition:opacity .1s}
+    #boot-inner{
+      display:flex;flex-direction:column;align-items:flex-start;
+      min-width:600px;
+    }
+    .boot-line{color:#4ade80;margin-bottom:.3rem;opacity:0;transition:opacity .1s;font-size:.95rem}
     .boot-line.show{opacity:1}
-    .boot-line .ok{color:#4ade80;margin-right:.5rem}
-    .boot-line .warn{color:#facc15;margin-right:.5rem}
-    .boot-line .err{color:#f87171;margin-right:.5rem}
+    .boot-line .ok{color:#4ade80;margin-right:.6rem}
+    .boot-line .warn{color:#facc15;margin-right:.6rem}
+    .boot-line .err{color:#f87171;margin-right:.6rem}
     .boot-line .dim{color:var(--muted)}
-    .boot-cursor{display:inline-block;width:8px;height:14px;background:var(--accent);animation:bcursor .8s step-end infinite;vertical-align:middle;margin-left:2px}
-    @keyframes bcursor{0%,100%{opacity:1}50%{opacity:0}}
-    .boot-progress{margin-top:1.5rem;height:2px;background:rgba(0,212,255,0.15);border-radius:2px;overflow:hidden;width:300px}
+    .boot-progress{margin-top:1.8rem;height:2px;background:rgba(0,212,255,0.15);border-radius:2px;overflow:hidden;width:100%}
     .boot-bar{height:100%;background:var(--accent);width:0;transition:width .1s linear;border-radius:2px}
+    .bat-ascii{color:var(--accent);font-family:monospace;font-size:.85rem;line-height:1.25;margin:.8rem 0;white-space:pre;text-align:center;width:100%}
 
     /* CUSTOM CURSOR */
     *{cursor:none!important}
@@ -221,9 +224,11 @@
 <body>
 <!-- BOOT SCREEN -->
 <div id="boot-screen">
-  <div style="color:var(--muted);font-size:.7rem;margin-bottom:1rem">eric-portfolio v2.0 — BIOS 2026</div>
-  <div id="boot-lines"></div>
-  <div class="boot-progress" style="margin-top:1.2rem"><div class="boot-bar" id="boot-bar"></div></div>
+  <div id="boot-inner">
+    <div style="color:var(--muted);font-size:.8rem;margin-bottom:1.2rem;letter-spacing:0.05em">eric-portfolio BIOS v2.0 — Iniciando...</div>
+    <div id="boot-lines"></div>
+    <div class="boot-progress"><div class="boot-bar" id="boot-bar"></div></div>
+  </div>
 </div>
 
 <!-- CURSOR -->
@@ -459,49 +464,75 @@
 <script>
 // ── BOOT SCREEN ──
 const bootLines=[
-  {type:'dim',  text:'Initializing eric-portfolio...'},
-  {type:'ok',   text:'Loading kernel modules... done'},
-  {type:'ok',   text:'Mounting /home/eric/experience'},
-  {type:'ok',   text:'Mounting /home/eric/skills'},
-  {type:'ok',   text:'Starting networking services'},
-  {type:'ok',   text:'Configuring OpenVPN... done'},
-  {type:'warn', text:'AWS SAA certification: IN PROGRESS'},
-  {type:'ok',   text:'Loading portfolio assets'},
-  {type:'ok',   text:'Injecting particles engine'},
-  {type:'ok',   text:'Starting web server on port 443'},
+  {type:'dim',  text:'eric-portfolio BIOS v2.0 — Iniciando...'},
   {type:'dim',  text:''},
-  {type:'ok',   text:'System ready. Welcome.'},
+  {type:'ok',   text:'Kernel: eric-alcazar 23.0 LTS'},
+  {type:'ok',   text:'CPU: Problem solver @ 3.6GHz'},
+  {type:'ok',   text:'RAM: 8GB conocimientos técnicos'},
+  {type:'ok',   text:'Disk: /dev/sda1 — experiencia montada'},
+  {type:'ok',   text:'NET: Barcelona → mundo conectado'},
+  {type:'ok',   text:'Iniciando el batordenador...'},
+  {type:'dim',  text:''},
+  {type:'bat',  text:''},
+  {type:'ok',   text:'Sistema listo. Bienvenido.'},
 ];
 
 const bootLinesEl=document.getElementById('boot-lines');
 const bootBar=document.getElementById('boot-bar');
 const bootScreen=document.getElementById('boot-screen');
 
+const batmanAscii=[
+  '              *         *      *         *',
+  '          ***          **********          ***',
+  '       *****           **********           *****',
+  '     *******           **********           *******',
+  '   **********         ************         **********',
+  '  ****************************************************',
+  ' ******************************************************',
+  '********************************************************',
+  '********************************************************',
+  '********************************************************',
+  ' ******************************************************',
+  '  ********      ************************      ********',
+  '   *******       *     *********      *       *******',
+  '     ******             *******              ******',
+  '       *****             *****              *****',
+  '          ***             ***              ***',
+  '            **             *              **',
+];
+
 function runBoot(){
   let i=0;
   const total=bootLines.length;
   function next(){
     if(i>=total){
-      // finish
       bootBar.style.width='100%';
       setTimeout(()=>{
         bootScreen.classList.add('hide');
         setTimeout(()=>bootScreen.remove(),700);
-      },400);
+      },500);
       return;
     }
     const bl=bootLines[i];
-    const div=document.createElement('div');
-    div.className='boot-line';
-    if(bl.type==='ok') div.innerHTML='<span class="ok">[  OK  ]</span><span>'+bl.text+'</span>';
-    else if(bl.type==='warn') div.innerHTML='<span class="warn">[ WARN ]</span><span style="color:#facc15">'+bl.text+'</span>';
-    else if(bl.type==='err') div.innerHTML='<span class="err">[ FAIL ]</span><span style="color:#f87171">'+bl.text+'</span>';
-    else div.innerHTML='<span class="dim">'+bl.text+'</span>';
-    bootLinesEl.appendChild(div);
-    setTimeout(()=>div.classList.add('show'),10);
+    if(bl.type==='bat'){
+      const pre=document.createElement('pre');
+      pre.className='bat-ascii';
+      pre.textContent=batmanAscii.join('\n');
+      bootLinesEl.appendChild(pre);
+    } else {
+      const div=document.createElement('div');
+      div.className='boot-line';
+      if(bl.type==='ok') div.innerHTML='<span class="ok">[  OK  ]</span> '+bl.text;
+      else if(bl.type==='warn') div.innerHTML='<span class="warn">[ WARN ]</span> <span style="color:#facc15">'+bl.text+'</span>';
+      else if(bl.type==='err') div.innerHTML='<span class="err">[ FAIL ]</span> <span style="color:#f87171">'+bl.text+'</span>';
+      else div.innerHTML='<span class="dim">'+bl.text+'</span>';
+      bootLinesEl.appendChild(div);
+      setTimeout(()=>div.classList.add('show'),10);
+    }
     bootBar.style.width=((i+1)/total*100)+'%';
     i++;
-    setTimeout(next, bl.text==='' ? 80 : Math.random()*120+60);
+    const delay=bl.type==='bat' ? 600 : bl.text==='' ? 60 : Math.random()*100+80;
+    setTimeout(next,delay);
   }
   next();
 }
