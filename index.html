@@ -501,9 +501,68 @@ function runBoot(){
     if(i>=total){
       bootBar.style.width='100%';
       setTimeout(()=>{
+        const matrix=document.createElement('div');
+        matrix.style.cssText='position:fixed;inset:0;z-index:9998;background:#000;overflow:hidden';
+        document.body.appendChild(matrix);
+
+        const mc=document.createElement('canvas');
+        mc.width=window.innerWidth;
+        mc.height=window.innerHeight;
+        mc.style.cssText='position:absolute;inset:0';
+        matrix.appendChild(mc);
+        const ctx2=mc.getContext('2d');
+
+        const chars='アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const cols=Math.floor(mc.width/14);
+        const drops=Array(cols).fill(1);
+        let frame2;
+        let bgOpacity=1; // background opacity, will decrease
+        let charOpacity=1;
+
+        function drawMatrix(){
+          // Fade background gradually
+          ctx2.clearRect(0,0,mc.width,mc.height);
+          // Draw semi-transparent dark bg (less each frame as bgOpacity decreases)
+          ctx2.fillStyle=`rgba(0,0,0,${bgOpacity*0.06})`;
+          ctx2.fillRect(0,0,mc.width,mc.height);
+          drops.forEach((y,i)=>{
+            const ch=chars[Math.floor(Math.random()*chars.length)];
+            ctx2.fillStyle=Math.random()>0.95
+              ? `rgba(255,255,255,${charOpacity})`
+              : `rgba(0,212,255,${charOpacity})`;
+            ctx2.font='13px monospace';
+            ctx2.fillText(ch,i*14,y*14);
+            if(y*14>mc.height&&Math.random()>0.975) drops[i]=0;
+            drops[i]++;
+          });
+          frame2=requestAnimationFrame(drawMatrix);
+        }
+        drawMatrix();
+
         bootScreen.classList.add('hide');
         setTimeout(()=>bootScreen.remove(),700);
-      },500);
+
+        // After 1s start fading the black background
+        setTimeout(()=>{
+          const bgFade=setInterval(()=>{
+            bgOpacity=Math.max(0, bgOpacity-0.02);
+            matrix.style.background=`rgba(0,0,0,${bgOpacity})`;
+            if(bgOpacity<=0) clearInterval(bgFade);
+          },30);
+        },800);
+
+        // After 2.2s fade out the characters too
+        setTimeout(()=>{
+          const charFade=setInterval(()=>{
+            charOpacity=Math.max(0, charOpacity-0.04);
+            if(charOpacity<=0){
+              clearInterval(charFade);
+              cancelAnimationFrame(frame2);
+              matrix.remove();
+            }
+          },30);
+        },2200);
+      },400);
       return;
     }
     const bl=bootLines[i];
