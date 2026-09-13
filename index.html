@@ -659,7 +659,7 @@ const termCmds={
     experience:()=>['<span class="t-out accent">Experiencia laboral:</span>','<span class="t-out">› Nereid (Mar 2026 — actualidad)</span>','<span class="t-out dim">  Programador Junior — integraciones EDI, VB.NET, C#, SOAP, Telerik Reports</span>','<span class="t-out">› CS&M (2023 — Mar 2026)</span>','<span class="t-out dim">  Administrador de Sistemas — automatización, VPN, NAS, RAID, redes</span>'],
     education:()=>['<span class="t-out accent">Formación:</span>','<span class="t-out">› CFGS DAW — Desarrollo de Aplicaciones Web (2024)</span>','<span class="t-out">› CFGS ASIX — Administración de Sistemas Informáticos y Redes (2023)</span>','<span class="t-out">› Premio al mejor proyecto de síntesis — ASIX, Jesuïtes Joan XXIII (2023)</span>'],
     contact:()=>['<span class="t-out accent">Contacto:</span>','<span class="t-out">› Email: eric.alcazarc@gmail.com</span>','<span class="t-out">› Teléfono: +34 611 47 51 24</span>','<span class="t-out">› LinkedIn: linkedin.com/in/eric-alcázar-contreras</span>','<span class="t-out">› GitHub: github.com/Escalopedo</span>','<span class="t-out">› Ubicación: Barcelona, España</span>'],
-    help:()=>['<span class="t-out accent">Comandos disponibles:</span>','<span class="t-out">  whoami      → presentación personal (nombre, edad, descripción)</span>','<span class="t-out">  skills      → habilidades técnicas por categoría</span>','<span class="t-out">  experience  → experiencia laboral detallada</span>','<span class="t-out">  education   → formación académica y premios</span>','<span class="t-out">  contact     → email, teléfono, LinkedIn y GitHub</span>','<span class="t-out">  clear       → limpiar la terminal</span>','<span class="t-out dim">  También puedes pulsar los botones de arriba ↑</span>'],
+    help:()=>['<span class="t-out accent">Comandos disponibles:</span>','<span class="t-out">  whoami      → presentación personal (nombre, edad, descripción)</span>','<span class="t-out">  skills      → habilidades técnicas por categoría</span>','<span class="t-out">  experience  → experiencia laboral detallada</span>','<span class="t-out">  education   → formación académica y premios</span>','<span class="t-out">  contact     → email, teléfono, LinkedIn y GitHub</span>','<span class="t-out">  clear       → limpiar la terminal</span>','<span class="t-out accent">Easter eggs:</span>','<span class="t-out dim">  hack · snake · pong · quiz · sudo · coffee</span>'],
     clear:()=>{termBody.innerHTML='';showIntro();return[]},
     ls:()=>['<span class="t-out">whoami  skills  experience  education  contact  help  clear</span>'],
     pwd:()=>['<span class="t-out">/home/eric/portfolio</span>'],
@@ -696,9 +696,300 @@ const termCmds={
 let commands=termCmds['es'];
 function addLine(html){const d=document.createElement('div');d.innerHTML=html;termBody.appendChild(d);termBody.scrollTop=termBody.scrollHeight}
 function typeLines(lines,delay=40){lines.forEach((l,i)=>setTimeout(()=>{addLine(l);termBody.scrollTop=termBody.scrollHeight},i*delay))}
+// ── MINIGAMES ──
+
+// HACK — Matrix rain
+function runHack(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;font-family:monospace;overflow:hidden;cursor:none';
+  document.body.appendChild(overlay);
+
+  const chars='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>{}[]|\\/#@!$%&*';
+  const cols=Math.floor(window.innerWidth/14);
+  const drops=Array(cols).fill(1);
+  const canvas=document.createElement('canvas');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  canvas.style.cssText='position:absolute;inset:0';
+  overlay.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+
+  // ESC to exit label
+  const esc=document.createElement('div');
+  esc.style.cssText='position:absolute;bottom:20px;right:20px;color:rgba(0,255,70,0.4);font-size:12px;font-family:monospace';
+  esc.textContent='[ ESC ] salir';
+  overlay.appendChild(esc);
+
+  // center message
+  const msg=document.createElement('div');
+  msg.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#0f0;font-size:18px;font-family:monospace;text-align:center;text-shadow:0 0 10px #0f0;letter-spacing:.1em;pointer-events:none';
+  msg.innerHTML='ACCESO CONCEDIDO<br><span style="font-size:12px;color:rgba(0,255,70,0.6)">eric-alcazar@batordenador:~$</span>';
+  setTimeout(()=>overlay.appendChild(msg),800);
+
+  let frame;
+  function draw(){
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0f0';
+    ctx.font='13px monospace';
+    drops.forEach((y,i)=>{
+      const c=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle=Math.random()>0.95?'#fff':'#0f0';
+      ctx.fillText(c,i*14,y*14);
+      if(y*14>canvas.height&&Math.random()>0.975) drops[i]=0;
+      drops[i]++;
+    });
+    frame=requestAnimationFrame(draw);
+  }
+  draw();
+
+  function close(){cancelAnimationFrame(frame);overlay.remove();termInput.focus();}
+  document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc);}});
+  overlay.addEventListener('click',close);
+}
+
+// QUIZ — Linux commands quiz
+const quizQuestions=[
+  {q:'¿Qué comando muestra los procesos en ejecución?',opts:['ps aux','ls -la','top','netstat'],a:0},
+  {q:'¿Cómo listas archivos ocultos en Linux?',opts:['ls -a','ls -l','dir','show hidden'],a:0},
+  {q:'¿Qué comando cambia permisos de un archivo?',opts:['chown','chmod','chgrp','chperm'],a:1},
+  {q:'¿Cómo ves el uso de disco?',opts:['du -sh','df -h','fdisk -l','lsblk'],a:1},
+  {q:'¿Qué hace el comando "grep"?',opts:['Comprime archivos','Busca texto en archivos','Lista directorios','Copia archivos'],a:1},
+  {q:'¿Cómo ves las conexiones de red activas?',opts:['ifconfig','netstat -an','ip route','arp -a'],a:1},
+  {q:'¿Qué comando muestra el uso de RAM?',opts:['raminfo','free -h','memstat','top -m'],a:1},
+  {q:'¿Cómo añades un usuario en Linux?',opts:['adduser','newuser','createuser','mkuser'],a:0},
+  {q:'¿Qué hace "chmod 777 archivo"?',opts:['Solo el dueño puede leer','Todos tienen todos los permisos','Borra el archivo','Lo hace ejecutable solo'],a:1},
+  {q:'¿Cómo ves la IP de tu máquina?',opts:['ipconfig','ip addr','showip','ifshow'],a:1},
+];
+
+let quizActive=false,quizScore=0,quizIdx=0;
+
+function runQuiz(){
+  if(quizActive) return;
+  quizActive=true;
+  quizScore=0;
+  quizIdx=0;
+  addLine('<span class="t-out accent">═══ QUIZ: Comandos Linux ═══</span>');
+  addLine('<span class="t-out dim">10 preguntas · escribe el número de tu respuesta</span>');
+  addLine('');
+  nextQuestion();
+}
+
+function nextQuestion(){
+  if(quizIdx>=quizQuestions.length){
+    const pct=Math.round(quizScore/quizQuestions.length*100);
+    const grade=pct>=80?'<span style="color:#4ade80">¡Excelente sysadmin!</span>':pct>=60?'<span style="color:#facc15">Bien, sigue practicando</span>':'<span style="color:#f87171">Necesitas repasar</span>';
+    addLine('');
+    addLine('<span class="t-out accent">═══ RESULTADO ═══</span>');
+    addLine('<span class="t-out">Puntuación: '+quizScore+'/'+quizQuestions.length+' ('+pct+'%)</span>');
+    addLine('<span class="t-out">'+grade+'</span>');
+    addLine('<span class="t-out dim">Escribe "quiz" para volver a jugar</span>');
+    quizActive=false;
+    return;
+  }
+  const q=quizQuestions[quizIdx];
+  addLine('<span class="t-out accent">['+( quizIdx+1)+'/'+quizQuestions.length+'] '+q.q+'</span>');
+  q.opts.forEach((o,i)=>addLine('<span class="t-out">  '+(i+1)+'. '+o+'</span>'));
+}
+
+function handleQuizInput(input){
+  const n=parseInt(input)-1;
+  const q=quizQuestions[quizIdx];
+  if(isNaN(n)||n<0||n>=q.opts.length){
+    addLine('<span class="t-out err">Escribe 1, 2, 3 o 4</span>');
+    return;
+  }
+  if(n===q.a){
+    addLine('<span style="color:#4ade80">✓ ¡Correcto!</span>');
+    quizScore++;
+  } else {
+    addLine('<span style="color:#f87171">✗ Incorrecto. Era: '+q.opts[q.a]+'</span>');
+  }
+  quizIdx++;
+  addLine('');
+  setTimeout(nextQuestion,300);
+}
+
+// SNAKE
+function runSnake(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace';
+  document.body.appendChild(overlay);
+
+  const COLS=40,ROWS=20,SIZE=18;
+  const canvas=document.createElement('canvas');
+  canvas.width=COLS*SIZE; canvas.height=ROWS*SIZE;
+  canvas.style.cssText='border:1px solid #00d4ff;box-shadow:0 0 20px rgba(0,212,255,0.3)';
+  overlay.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+
+  const info=document.createElement('div');
+  info.style.cssText='color:#00d4ff;font-size:12px;margin-top:10px;letter-spacing:.05em';
+  info.textContent='WASD / ↑↓←→ para mover  ·  ESC para salir';
+  overlay.appendChild(info);
+
+  const scoreEl=document.createElement('div');
+  scoreEl.style.cssText='color:#4ade80;font-size:14px;margin-top:6px;font-family:monospace';
+  scoreEl.textContent='Score: 0';
+  overlay.appendChild(scoreEl);
+
+  let snake=[{x:20,y:10}],dir={x:1,y:0},food=rndFood(),score=0,gameOver=false,gameLoop;
+
+  function rndFood(){
+    return{x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};
+  }
+
+  function draw(){
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // grid
+    ctx.strokeStyle='rgba(0,212,255,0.05)';
+    for(let i=0;i<COLS;i++){ctx.beginPath();ctx.moveTo(i*SIZE,0);ctx.lineTo(i*SIZE,canvas.height);ctx.stroke();}
+    for(let i=0;i<ROWS;i++){ctx.beginPath();ctx.moveTo(0,i*SIZE);ctx.lineTo(canvas.width,i*SIZE);ctx.stroke();}
+    // food
+    ctx.fillStyle='#f87171';
+    ctx.font=SIZE-2+'px monospace';
+    ctx.fillText('★',food.x*SIZE+1,food.y*SIZE+SIZE-2);
+    // snake
+    snake.forEach((s,i)=>{
+      ctx.fillStyle=i===0?'#00d4ff':'rgba(0,212,255,0.6)';
+      ctx.fillRect(s.x*SIZE+1,s.y*SIZE+1,SIZE-2,SIZE-2);
+    });
+    if(gameOver){
+      ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#f87171';
+      ctx.font='bold 24px monospace';
+      ctx.textAlign='center';
+      ctx.fillText('GAME OVER',canvas.width/2,canvas.height/2-10);
+      ctx.fillStyle='#00d4ff';
+      ctx.font='14px monospace';
+      ctx.fillText('Score: '+score,canvas.width/2,canvas.height/2+20);
+      ctx.fillText('ESC para salir',canvas.width/2,canvas.height/2+44);
+      ctx.textAlign='left';
+    }
+  }
+
+  function update(){
+    if(gameOver) return;
+    const head={x:(snake[0].x+dir.x+COLS)%COLS,y:(snake[0].y+dir.y+ROWS)%ROWS};
+    if(snake.some(s=>s.x===head.x&&s.y===head.y)){gameOver=true;draw();return;}
+    snake.unshift(head);
+    if(head.x===food.x&&head.y===food.y){score++;scoreEl.textContent='Score: '+score;food=rndFood();}
+    else snake.pop();
+    draw();
+  }
+
+  gameLoop=setInterval(update,130);
+
+  function keyHandler(e){
+    if(e.key==='Escape'){clearInterval(gameLoop);overlay.remove();document.removeEventListener('keydown',keyHandler);termInput.focus();return;}
+    const map={'ArrowUp':{x:0,y:-1},'ArrowDown':{x:0,y:1},'ArrowLeft':{x:-1,y:0},'ArrowRight':{x:1,y:0},'w':{x:0,y:-1},'s':{x:0,y:1},'a':{x:-1,y:0},'d':{x:1,y:0}};
+    if(map[e.key]){
+      const nd=map[e.key];
+      if(nd.x!==dir.x*-1||nd.y!==dir.y*-1) dir=nd;
+      e.preventDefault();
+    }
+  }
+  document.addEventListener('keydown',keyHandler);
+  draw();
+}
+
+// PONG
+function runPong(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace';
+  document.body.appendChild(overlay);
+
+  const W=600,H=400,PS=80,PW=10,BZ=10;
+  const canvas=document.createElement('canvas');
+  canvas.width=W;canvas.height=H;
+  canvas.style.cssText='border:1px solid #00d4ff;box-shadow:0 0 20px rgba(0,212,255,0.3)';
+  overlay.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+
+  const info=document.createElement('div');
+  info.style.cssText='color:#00d4ff;font-size:11px;margin-top:8px;letter-spacing:.05em';
+  info.textContent='W/S — tú  ·  ↑/↓ — rival  ·  ESC para salir';
+  overlay.appendChild(info);
+
+  let p1={x:10,y:H/2-PS/2,s:0},p2={x:W-PW-10,y:H/2-PS/2,s:0};
+  let ball={x:W/2,y:H/2,vx:4,vy:3};
+  let keys={},gameLoop;
+
+  function draw(){
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    // center line
+    ctx.strokeStyle='rgba(0,212,255,0.15)';ctx.setLineDash([10,10]);
+    ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
+    ctx.setLineDash([]);
+    // scores
+    ctx.fillStyle='#00d4ff';ctx.font='bold 32px monospace';ctx.textAlign='center';
+    ctx.fillText(p1.s,W/4,50);ctx.fillText(p2.s,W*3/4,50);
+    ctx.textAlign='left';
+    // paddles
+    ctx.fillStyle='#00d4ff';
+    ctx.fillRect(p1.x,p1.y,PW,PS);
+    ctx.fillRect(p2.x,p2.y,PW,PS);
+    // ball
+    ctx.fillStyle='#fff';
+    ctx.shadowColor='#00d4ff';ctx.shadowBlur=10;
+    ctx.fillRect(ball.x-BZ/2,ball.y-BZ/2,BZ,BZ);
+    ctx.shadowBlur=0;
+  }
+
+  function update(){
+    // player 1
+    if(keys['w']&&p1.y>0) p1.y-=5;
+    if(keys['s']&&p1.y<H-PS) p1.y+=5;
+    // player 2 (AI or keys)
+    if(keys['ArrowUp']&&p2.y>0) p2.y-=5;
+    else if(keys['ArrowDown']&&p2.y<H-PS) p2.y+=5;
+    else if(!keys['ArrowUp']&&!keys['ArrowDown']){
+      // simple AI
+      const mid=p2.y+PS/2;
+      if(mid<ball.y-5) p2.y+=3.5;
+      else if(mid>ball.y+5) p2.y-=3.5;
+    }
+    // ball
+    ball.x+=ball.vx;ball.y+=ball.vy;
+    if(ball.y<=0||ball.y>=H) ball.vy*=-1;
+    // paddle collision p1
+    if(ball.x<=p1.x+PW&&ball.y>=p1.y&&ball.y<=p1.y+PS){ball.vx=Math.abs(ball.vx);ball.vy+=(ball.y-(p1.y+PS/2))*0.1;}
+    // paddle collision p2
+    if(ball.x>=p2.x-BZ&&ball.y>=p2.y&&ball.y<=p2.y+PS){ball.vx=-Math.abs(ball.vx);ball.vy+=(ball.y-(p2.y+PS/2))*0.1;}
+    // score
+    if(ball.x<0){p2.s++;reset();}
+    if(ball.x>W){p1.s++;reset();}
+    draw();
+  }
+
+  function reset(){ball={x:W/2,y:H/2,vx:(Math.random()>0.5?1:-1)*4,vy:(Math.random()-0.5)*6};}
+
+  gameLoop=setInterval(update,1000/60);
+
+  function keyHandler(e){
+    if(e.key==='Escape'){clearInterval(gameLoop);overlay.remove();document.removeEventListener('keydown',keyHandler);document.removeEventListener('keyup',keyUp);termInput.focus();return;}
+    keys[e.key]=true;e.preventDefault();
+  }
+  function keyUp(e){keys[e.key]=false;}
+  document.addEventListener('keydown',keyHandler);
+  document.addEventListener('keyup',keyUp);
+  draw();
+}
+
 function runCmd(cmd){
   const c=cmd.trim().toLowerCase();if(!c)return;
   addLine('<div class="t-line"><span class="t-prompt-t">eric@portfolio:~$</span><span class="t-cmd"> '+cmd+'</span></div>');
+  // quiz input mode
+  if(quizActive){handleQuizInput(c);setTimeout(()=>termBody.scrollTop=termBody.scrollHeight,400);return;}
+  // games
+  if(c==='hack'){runHack();return;}
+  if(c==='snake'){runSnake();return;}
+  if(c==='pong'){runPong();return;}
+  if(c==='quiz'){runQuiz();setTimeout(()=>termBody.scrollTop=termBody.scrollHeight,400);return;}
+  if(c==='sudo'){setTimeout(()=>addLine('<span class="t-out err">Permission denied. Nice try. 😏</span>'),50);setTimeout(()=>termBody.scrollTop=termBody.scrollHeight,400);return;}
+  if(c==='coffee'){setTimeout(()=>addLine('<span class="t-out">Brewing... ☕ One moment.</span>'),50);setTimeout(()=>addLine('<span class="t-out dim">Error: No coffee machine found in /dev</span>'),800);setTimeout(()=>termBody.scrollTop=termBody.scrollHeight,1000);return;}
   if(commands[c]){const out=commands[c]();if(out.length)typeLines(out,45)}
   else setTimeout(()=>addLine('<span class="t-out err">bash: '+c+': command not found — escribe "help" para ver los comandos</span>'),50);
   setTimeout(()=>termBody.scrollTop=termBody.scrollHeight,400);
